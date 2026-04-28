@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Healthcare AI Use-Case Studio · Nanox Technologies</title>
+  <meta name="description" content="Nine governed healthcare AI use cases adapted for Sidra Medicine — architecture, flows, integrations, and phasing in one interactive studio." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+</head>
+<body data-theme="light">
+  <div class="bg-orbs" aria-hidden="true">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="orb orb-3"></span>
+    <span class="orb orb-4"></span>
+  </div>
+
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="22" height="22"><defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#3CDBC0"/><stop offset="1" stop-color="#008578"/></linearGradient></defs><circle cx="16" cy="16" r="14" fill="url(#lg)"/><path d="M9 22V10l14 12V10" stroke="#FBFBF3" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <div>
+        <div class="company">Nanox Technologies</div>
+        <div class="tagline">Healthcare AI Use-Case Studio</div>
+      </div>
+    </div>
+    <nav class="top-nav">
+      <a href="#overview">Overview</a>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#detail">Detail</a>
+      <button id="theme-toggle" class="theme-btn" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="ico-sun" viewBox="0 0 24 24" width="16" height="16"><path d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66l1.41-1.41M4.93 19.07l1.41-1.41m0-11.32L4.93 4.93m14.14 14.14l-1.41-1.41M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+        <svg class="ico-moon" viewBox="0 0 24 24" width="16" height="16"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="overview" class="hero">
+      <div class="hero-text">
+        <span class="eyebrow"><span class="eyebrow-dot"></span>Healthcare AI · Sidra Medicine · Doha</span>
+        <h1>Nine governed AI use cases.<br/><em>One studio</em> to walk Sidra through every flow.</h1>
+        <p class="lead">For each use case we capture the patient and clinician story, business goals, integration footprint, architecture, and an end-to-end flow that Nanox can deliver on a Sidra-grade AI Landing Zone — JCI-aligned, MoPH-resident, Arabic + English by default.</p>
+        <div class="hero-actions">
+          <a href="#portfolio" class="btn btn-primary">Explore the portfolio<span class="arrow">→</span></a>
+          <a href="#detail" class="btn btn-ghost">Open lighthouse use case</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><strong data-count="9">0</strong><span>Use cases scoped</span></div>
+          <div class="stat"><strong data-count="3">0</strong><span>Lighthouse pilots</span></div>
+          <div class="stat"><strong data-count="13">0</strong><span>Sections per use case</span></div>
+          <div class="stat"><strong data-count="100" data-suffix="%">0</strong><span>Governed on Foundry</span></div>
+        </div>
+      </div>
+      <aside class="hero-card glass">
+        <div class="hero-card-head">
+          <span class="badge">Ground rules</span>
+          <span class="badge badge-soft">v1.0</span>
+        </div>
+        <ul class="check-list">
+          <li><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Patient-first, family-centered</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Clinician approval gates</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>JCI-aligned audit + safety</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Arabic + English by default</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Qatar MoPH data residency</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section id="portfolio" class="portfolio">
+      <header class="section-head">
+        <div>
+          <span class="section-eyebrow">Portfolio</span>
+          <h2>The nine use cases at a glance</h2>
+          <p class="muted">Filter by theme or search. Click any card to drop into the full requirements, integrations, architecture and flow.</p>
+        </div>
+        <div class="filter-bar">
+          <input id="search" type="search" placeholder="Search use cases…" aria-label="Search use cases" />
+          <div id="filters" class="filters"></div>
+        </div>
+      </header>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <section id="detail" class="detail" aria-live="polite">
+      <aside class="side-nav glass">
+        <div class="side-nav-head">
+          <span class="badge">Use cases</span>
+          <span class="muted small" id="side-count">9</span>
+        </div>
+        <ol id="side-list"></ol>
+      </aside>
+      <article id="detail-pane" class="detail-pane">
+        <p class="detail-empty">Select a use case from the portfolio above.</p>
+      </article>
+    </section>
+
+    <footer class="footer">
+      <div><strong>Nanox Technologies</strong> · Healthcare AI Use-Case Studio · Built for the Sidra Medicine engagement</div>
+      <div class="muted small">Source: Sidra public mission · M42 portfolio (Jad Salloum) adapted for Sidra · Generated with the FAF Analyst Agent</div>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
