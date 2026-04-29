@@ -520,7 +520,10 @@ function renderFilters() {
     const n = useCases.filter(u => u.category === c).length;
     return `<button class="filter-chip filter-chip-cat" data-cat="${c}">${c} · ${n}</button>`;
   }).join('');
-  root.innerHTML = head + chips;
+  const toggleBtn = `<button class="filter-toggle" id="filter-toggle" aria-label="Toggle category filters" aria-expanded="false">More filters</button>`;
+  root.innerHTML = head + toggleBtn + `<div class="filter-category-container" id="filter-category-container">${chips}</div>`;
+
+  // Handle category filter chip clicks
   root.querySelectorAll('.filter-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       activeFilter = btn.dataset.cat;
@@ -528,6 +531,17 @@ function renderFilters() {
       renderCards();
     });
   });
+
+  // Handle toggle button click
+  const toggleButton = document.getElementById('filter-toggle');
+  const categoryContainer = document.getElementById('filter-category-container');
+  if (toggleButton && categoryContainer) {
+    toggleButton.addEventListener('click', () => {
+      const isExpanded = categoryContainer.classList.toggle('expanded');
+      toggleButton.setAttribute('aria-expanded', isExpanded);
+      toggleButton.textContent = isExpanded ? 'Fewer filters' : 'More filters';
+    });
+  }
 }
 
 function renderCards() {
