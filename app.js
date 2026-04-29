@@ -443,7 +443,6 @@ async function load() {
   useCases = await res.json();
   renderFilters();
   renderCards();
-  renderE2EFlows();
   renderSideNav();
   setupTheme();
   setupSearch();
