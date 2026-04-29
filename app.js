@@ -215,6 +215,184 @@ const BIG_FIVE_ANIM = {
     </svg>`,
 };
 
+// ---------- Big Five end-to-end animated flows ----------
+// Horizontal 5-stage storyboard. Each stage activates in sequence on a 10s loop.
+// Used in the detail pane below the hook banner.
+
+function _flowStageGroup(stage, idx, accent) {
+  const positions = [80, 260, 440, 620, 800];
+  const x = positions[idx];
+  // Stage activation timing (10s loop): stage k brightens at fraction k*0.18
+  const t = idx * 0.18;
+  const keyTimes = idx === 0 ? '0;0.05;1' : `0;${t.toFixed(3)};${(t + 0.06).toFixed(3)};1`;
+  const values = idx === 0 ? '0.18;1;1' : '0.18;0.18;1;1';
+  return `
+    <g transform="translate(${x},130)" class="flow-stage">
+      <!-- inactive ring (always visible) -->
+      <circle r="38" fill="#FFF" stroke="#D8DCDF" stroke-width="1.5"/>
+      <!-- active ring + content (opacity animated) -->
+      <g opacity="0.18">
+        <circle r="38" fill="${accent}" opacity="0.10"/>
+        <circle r="38" fill="none" stroke="${accent}" stroke-width="2.2"/>
+        <circle r="44" fill="none" stroke="${accent}" stroke-width="1.4" opacity="0.45">
+          <animate attributeName="r" values="38;48;38" dur="2.2s" begin="${(idx*1.8).toFixed(2)}s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.45;0;0.45" dur="2.2s" begin="${(idx*1.8).toFixed(2)}s" repeatCount="indefinite"/>
+        </circle>
+        <g>${stage.icon}</g>
+        <animate attributeName="opacity" keyTimes="${keyTimes}" values="${values}" dur="10s" repeatCount="indefinite"/>
+      </g>
+      <!-- step number badge -->
+      <g transform="translate(28,-30)">
+        <circle r="11" fill="${accent}"/>
+        <text y="4" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="#FFF">${idx + 1}</text>
+      </g>
+      <!-- labels -->
+      <text y="62" text-anchor="middle" font-family="Cabin,sans-serif" font-size="13" font-weight="700" fill="#1F2A2E">${stage.label}</text>
+      <text y="80" text-anchor="middle" font-family="Cabin,sans-serif" font-size="11" fill="#5C6B70">${stage.sub}</text>
+    </g>`;
+}
+
+function _flowConnector(idx, accent) {
+  // Connector idx is between stage idx and idx+1
+  const positions = [80, 260, 440, 620, 800];
+  const x1 = positions[idx] + 38;
+  const x2 = positions[idx + 1] - 38;
+  const len = x2 - x1;
+  const t = (idx + 1) * 0.18;
+  return `
+    <g transform="translate(${x1},130)">
+      <line x1="0" y1="0" x2="${len}" y2="0" stroke="#D8DCDF" stroke-width="2"/>
+      <line x1="0" y1="0" x2="${len}" y2="0" stroke="${accent}" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="${len}" stroke-dashoffset="${len}">
+        <animate attributeName="stroke-dashoffset"
+          keyTimes="0;${(t - 0.04).toFixed(3)};${(t + 0.05).toFixed(3)};1"
+          values="${len};${len};0;0" dur="10s" repeatCount="indefinite"/>
+      </line>
+      <!-- traveling pulse -->
+      <circle r="3.5" fill="${accent}">
+        <animate attributeName="cx" values="0;${len}" keyTimes="0;1" dur="0.7s" begin="${(idx*1.8 + 1.0).toFixed(2)}s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="0.7s" begin="${(idx*1.8 + 1.0).toFixed(2)}s" repeatCount="indefinite"/>
+      </circle>
+    </g>`;
+}
+
+function buildE2EFlow({ accent, title, stages, outcome }) {
+  const stageSvg = stages.map((s, i) => _flowStageGroup(s, i, accent)).join('');
+  const connSvg = stages.slice(0, -1).map((_, i) => _flowConnector(i, accent)).join('');
+  return `
+    <svg class="bf-flow" viewBox="0 0 880 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${title}">
+      <defs>
+        <linearGradient id="bgg-${accent.replace('#','')}" x1="0" x2="1">
+          <stop offset="0" stop-color="${accent}" stop-opacity="0.04"/>
+          <stop offset="1" stop-color="${accent}" stop-opacity="0.10"/>
+        </linearGradient>
+      </defs>
+      <rect width="880" height="300" fill="url(#bgg-${accent.replace('#','')})" rx="14"/>
+      <!-- header -->
+      <text x="32" y="34" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="${accent}" letter-spacing="2">END-TO-END FLOW</text>
+      <text x="32" y="58" font-family="Fraunces,serif" font-size="18" font-weight="700" fill="#1F2A2E">${title}</text>
+      <!-- connectors first so stages sit on top -->
+      ${connSvg}
+      ${stageSvg}
+      <!-- outcome stamp -->
+      <g transform="translate(440,260)" opacity="0">
+        <rect x="-200" y="-18" width="400" height="36" rx="18" fill="${accent}"/>
+        <text y="5" text-anchor="middle" font-family="Cabin,sans-serif" font-size="13" font-weight="700" fill="#FFF">✓  ${outcome}</text>
+        <animate attributeName="opacity" keyTimes="0;0.88;0.92;0.98;1" values="0;0;1;1;0" dur="10s" repeatCount="indefinite"/>
+      </g>
+    </svg>`;
+}
+
+const I = {
+  // Reusable inline icons sized for the 38-radius stage circles, centered at 0,0
+  guideline: '<g><rect x="-12" y="-13" width="24" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="-7" y1="-6" x2="7" y2="-6" stroke="currentColor" stroke-width="1.6"/><line x1="-7" y1="-1" x2="5" y2="-1" stroke="currentColor" stroke-width="1.6"/><line x1="-7" y1="4" x2="6" y2="4" stroke="currentColor" stroke-width="1.6"/></g>',
+  brain: '<g><circle r="14" fill="none" stroke="currentColor" stroke-width="1.8"/><text y="4" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="currentColor">AI</text></g>',
+  pill: '<g><rect x="-13" y="-5" width="26" height="10" rx="5" fill="currentColor" opacity="0.25"/><rect x="-13" y="-5" width="13" height="10" rx="5" fill="currentColor"/><line x1="0" y1="-5" x2="0" y2="5" stroke="#FFF" stroke-width="1.2"/></g>',
+  tap: '<g><rect x="-12" y="-9" width="24" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M-6 0 L-2 4 L6 -4" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>',
+  audit: '<g><rect x="-10" y="-12" width="20" height="24" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="-5" y1="-6" x2="5" y2="-6" stroke="currentColor" stroke-width="1.6"/><line x1="-5" y1="-1" x2="5" y2="-1" stroke="currentColor" stroke-width="1.6"/><path d="M-5 6 L-2 9 L5 2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>',
+  tube: '<g><rect x="-6" y="-14" width="12" height="26" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="-4" y="0" width="8" height="10" rx="1.5" fill="currentColor" opacity="0.7"/></g>',
+  alert: '<g><path d="M0 -14 L13 9 L-13 9 Z" fill="currentColor" opacity="0.25" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><line x1="0" y1="-6" x2="0" y2="2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cy="6" r="1.6" fill="currentColor"/></g>',
+  routes: '<g><path d="M-12 -8 L0 0 L-12 8 M12 -8 L0 0 L12 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>',
+  ack: '<g><circle r="13" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M-6 1 L-2 5 L6 -4" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>',
+  phone: '<g><rect x="-9" y="-13" width="18" height="26" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cy="9" r="1.6" fill="currentColor"/><line x1="-4" y1="-9" x2="4" y2="-9" stroke="currentColor" stroke-width="1.6"/></g>',
+  intent: '<g><circle cx="0" cy="-2" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M-3 -2 L-1 0 L3 -4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="7" x2="0" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>',
+  calendar: '<g><rect x="-12" y="-10" width="24" height="22" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="-12" y1="-3" x2="12" y2="-3" stroke="currentColor" stroke-width="1.6"/><rect x="-3" y="1" width="6" height="6" fill="currentColor"/></g>',
+  sms: '<g><rect x="-13" y="-9" width="26" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M-13 7 L-7 11 L-7 7" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="-5" r="1.4" fill="currentColor"/><circle r="1.4" fill="currentColor"/><circle cx="5" r="1.4" fill="currentColor"/></g>',
+  human: '<g><circle cx="0" cy="-6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M-9 12 q0 -10 9 -10 q9 0 9 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>',
+  case: '<g><rect x="-12" y="-9" width="24" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="-12" y1="-2" x2="12" y2="-2" stroke="currentColor" stroke-width="1.6"/><line x1="-6" y1="-9" x2="-6" y2="-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="6" y1="-9" x2="6" y2="-13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>',
+  predict: '<g><polyline points="-13,8 -6,2 -1,5 5,-4 13,-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="-8" r="2.4" fill="currentColor"/></g>',
+  checklist: '<g><rect x="-11" y="-13" width="22" height="26" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M-7 -7 L-5 -5 L-1 -9" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="2" y1="-7" x2="7" y2="-7" stroke="currentColor" stroke-width="1.6"/><path d="M-7 0 L-5 2 L-1 -2" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="2" y1="0" x2="7" y2="0" stroke="currentColor" stroke-width="1.6"/><line x1="-7" y1="7" x2="-3" y2="7" stroke="currentColor" stroke-width="1.6"/><line x1="2" y1="7" x2="7" y2="7" stroke="currentColor" stroke-width="1.6"/></g>',
+  dashboard: '<g><rect x="-13" y="-10" width="26" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="-10" y="2" width="4" height="6" fill="currentColor"/><rect x="-3" y="-2" width="4" height="10" fill="currentColor"/><rect x="4" y="-6" width="4" height="14" fill="currentColor"/></g>',
+  start: '<g><polygon points="-9,-10 11,0 -9,10" fill="currentColor"/></g>',
+  lock: '<g><path d="M-7 -3 v-6 q0 -7 7 -7 q7 0 7 7 v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="-10" y="-3" width="20" height="14" rx="2" fill="currentColor" opacity="0.85"/><circle cy="3" r="2" fill="#FFF"/></g>',
+  chat: '<g><rect x="-13" y="-10" width="26" height="18" rx="3" fill="currentColor"/><path d="M-4 8 L-1 12 L4 8" fill="currentColor"/><circle cx="-5" r="1.6" fill="#FFF"/><circle r="1.6" fill="#FFF"/><circle cx="5" r="1.6" fill="#FFF"/></g>',
+  shield: '<g><path d="M0 -13 L11 -8 V2 q0 8 -11 12 q-11 -4 -11 -12 V-8 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M-5 0 L-2 3 L5 -4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>',
+  unlock: '<g><path d="M-7 -3 v-6 q0 -7 7 -7 q4 0 6 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="-10" y="-3" width="20" height="14" rx="2" fill="currentColor"/><circle cy="3" r="2" fill="#FFF"/></g>',
+  ehr: '<g><rect x="-13" y="-10" width="26" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="-13" y1="-3" x2="13" y2="-3" stroke="currentColor" stroke-width="1.6"/><path d="M-9 4 h4 l1 -3 l2 5 l1 -2 h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g>',
+};
+
+const BIG_FIVE_E2E = {
+  'cpg-agent': () => buildE2EFlow({
+    accent: '#008578',
+    title: 'CPG Agent · pediatric dose, in seconds',
+    outcome: 'Pediatric dose at the bedside in seconds. Audit trail written automatically.',
+    stages: [
+      { label: 'At the bedside', sub: 'Weight, age, parent waiting', icon: `<g color="#008578">${I.guideline}</g>` },
+      { label: 'AI reads chart',  sub: 'Sidra-approved pathway',     icon: `<g color="#008578">${I.brain}</g>` },
+      { label: 'Dose computed',   sub: 'With evidence trace',        icon: `<g color="#008578">${I.pill}</g>` },
+      { label: 'One-tap approve', sub: 'Or override w/ reason',      icon: `<g color="#008578">${I.tap}</g>` },
+      { label: 'JCI audit log',   sub: 'Generated automatically',    icon: `<g color="#008578">${I.audit}</g>` },
+    ],
+  }),
+  'critical-lab-results': () => buildE2EFlow({
+    accent: '#E25C4D',
+    title: 'Critical Labs · closed loop in single-digit minutes',
+    outcome: 'Acknowledge under 5 minutes. Closed loop on every panic value.',
+    stages: [
+      { label: 'Panic value',     sub: 'Lab analyzer → HL7',         icon: `<g color="#E25C4D">${I.tube}</g>` },
+      { label: 'Agent watches',   sub: 'Detects within seconds',     icon: `<g color="#E25C4D">${I.alert}</g>` },
+      { label: 'Right clinician', sub: 'Schedule + chart',           icon: `<g color="#E25C4D">${I.routes}</g>` },
+      { label: 'Teams → SMS → on-call', sub: 'Escalates till ack',   icon: `<g color="#E25C4D">${I.sms}</g>` },
+      { label: 'Acknowledged',    sub: 'Loop closed, logged',        icon: `<g color="#E25C4D">${I.ack}</g>` },
+    ],
+  }),
+  'patient-voice-bot': () => buildE2EFlow({
+    accent: '#00A395',
+    title: 'Patient Voice Bot · answer ring one in AR + EN',
+    outcome: 'Calls answered in Arabic and English, 24/7. Staff freed for complex cases.',
+    stages: [
+      { label: 'Patient calls',   sub: 'Arabic or English',          icon: `<g color="#00A395">${I.phone}</g>` },
+      { label: 'Bot answers',     sub: 'Greets, identifies intent',  icon: `<g color="#00A395">${I.intent}</g>` },
+      { label: 'Books / answers', sub: 'Calendar, FAQs, refills',    icon: `<g color="#00A395">${I.calendar}</g>` },
+      { label: 'Confirmation',    sub: 'SMS + email reminder',       icon: `<g color="#00A395">${I.sms}</g>` },
+      { label: 'Warm transfer',   sub: 'Sensitive → human + ctx',    icon: `<g color="#00A395">${I.human}</g>` },
+    ],
+  }),
+  'or-scheduling': () => buildE2EFlow({
+    accent: '#FF8674',
+    title: 'OR Scheduling · first-case on time, every theatre',
+    outcome: 'First-case on time. Same-day utilization visible by 8 AM.',
+    stages: [
+      { label: 'Tomorrow\u2019s list', sub: 'Cases stacked',          icon: `<g color="#FF8674">${I.case}</g>` },
+      { label: 'Predict duration', sub: 'Surgeon + chart history',   icon: `<g color="#FF8674">${I.predict}</g>` },
+      { label: 'Readiness check', sub: 'Labs · consents · kit',      icon: `<g color="#FF8674">${I.checklist}</g>` },
+      { label: 'Conflict alert',  sub: 'Fix overnight, not 10:00',   icon: `<g color="#FF8674">${I.alert}</g>` },
+      { label: 'On-time start',   sub: 'Live utilization by 8 AM',   icon: `<g color="#FF8674">${I.dashboard}</g>` },
+    ],
+  }),
+  'itsm-agent': () => buildE2EFlow({
+    accent: '#005C55',
+    title: 'ITSM Agent · locked-out clinician back in 60s',
+    outcome: 'Back in the EHR in 60 seconds. IT focused on real engineering.',
+    stages: [
+      { label: 'Locked out',      sub: 'Clinic stalls, paper notes', icon: `<g color="#005C55">${I.lock}</g>` },
+      { label: 'Asks in Teams',   sub: 'Same place they already are', icon: `<g color="#005C55">${I.chat}</g>` },
+      { label: 'Identity verified', sub: 'Entra + policy gates',     icon: `<g color="#005C55">${I.shield}</g>` },
+      { label: 'Password reset',  sub: 'Auto + audit',               icon: `<g color="#005C55">${I.unlock}</g>` },
+      { label: 'Back in the EHR', sub: 'Ticket auto-closed',         icon: `<g color="#005C55">${I.ehr}</g>` },
+    ],
+  }),
+};
+
 const ACCENTS = {
   'cpg-agent': '#008578',
   'patient-voice-bot': '#00A395',
@@ -265,6 +443,7 @@ async function load() {
   useCases = await res.json();
   renderFilters();
   renderCards();
+  renderE2EFlows();
   renderSideNav();
   setupTheme();
   setupSearch();
@@ -418,6 +597,34 @@ function extractTags(uc) {
   return tags.slice(0, 4);
 }
 
+function renderE2EFlows() {
+  const root = document.getElementById('e2e-list');
+  if (!root) return;
+  const big = useCases.filter(u => u.phase === 1);
+  root.innerHTML = big.map(uc => {
+    const svg = BIG_FIVE_E2E[uc.id] ? BIG_FIVE_E2E[uc.id]() : '';
+    if (!svg) return '';
+    return `
+      <article class="e2e-card" data-id="${uc.id}">
+        <header class="e2e-head">
+          <div>
+            <span class="e2e-cat">${uc.category}</span>
+            <h3>${uc.name}</h3>
+            <p class="e2e-hook">${uc.hook || ''}</p>
+          </div>
+          <button class="btn btn-ghost e2e-open" data-id="${uc.id}">Open use case <span class="arrow">\u2192</span></button>
+        </header>
+        <div class="e2e-svg-wrap">${svg}</div>
+      </article>`;
+  }).join('');
+  root.querySelectorAll('.e2e-open').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectUseCase(btn.dataset.id);
+      document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+}
+
 function renderSideNav() {
   const list = document.getElementById('side-list');
   list.innerHTML = '';
@@ -464,6 +671,9 @@ function selectUseCase(id) {
   const banner = (uc.phase === 1 && BIG_FIVE_ANIM[uc.id])
     ? `<div class="uc-banner">${BIG_FIVE_ANIM[uc.id]('lg')}<div class="uc-banner-hook">${uc.hook || ''}</div></div>`
     : '';
+  const e2e = (uc.phase === 1 && BIG_FIVE_E2E[uc.id])
+    ? `<div class="uc-e2e">${BIG_FIVE_E2E[uc.id]()}</div>`
+    : '';
 
   pane.innerHTML = `
     <div class="uc-meta">
@@ -475,6 +685,7 @@ function selectUseCase(id) {
       <h2>${uc.name}</h2>
     </div>
     ${banner}
+    ${e2e}
     <div class="uc-overview">${overviewHtml}</div>
     <div class="tabs" role="tablist">
       ${Object.keys(TAB_LABELS).map((k, i) => `<button class="tab-btn ${i === 0 ? 'active' : ''}" data-tab="${k}">${ICONS[k]}${TAB_LABELS[k]}</button>`).join('')}
