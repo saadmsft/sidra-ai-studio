@@ -40,7 +40,7 @@ const SECTION_GROUPS = {
 
 let useCases = [];
 let activeId = null;
-let activeFilter = 'all';
+let activeFilter = 'big-five'; // default view: the Big Five for clinicians + ops
 let searchTerm = '';
 
 initMermaid('light');
@@ -54,7 +54,10 @@ async function load() {
   setupTheme();
   setupSearch();
   animateCounters();
-  if (useCases.length) selectUseCase(useCases[0].id);
+  if (useCases.length) {
+    const firstBig = useCases.find(u => u.phase === 1) || useCases[0];
+    selectUseCase(firstBig.id);
+  }
 }
 
 function initMermaid(theme) {
@@ -112,12 +115,19 @@ function initMermaid(theme) {
 function renderFilters() {
   const cats = Array.from(new Set(useCases.map(u => u.category)));
   const root = document.getElementById('filters');
-  const all = `<button class="filter-chip active" data-cat="all">All · ${useCases.length}</button>`;
+  const big = useCases.filter(u => u.phase === 1).length;
+  const phase2 = useCases.filter(u => u.phase === 2).length;
+  const total = useCases.length;
+  const head = [
+    `<button class="filter-chip ${activeFilter === 'big-five' ? 'active' : ''}" data-cat="big-five">The Big Five · ${big}</button>`,
+    `<button class="filter-chip ${activeFilter === 'phase-2' ? 'active' : ''}" data-cat="phase-2">Phase 2 · Foundation &amp; Back-office · ${phase2}</button>`,
+    `<button class="filter-chip ${activeFilter === 'all' ? 'active' : ''}" data-cat="all">All · ${total}</button>`,
+  ].join('');
   const chips = cats.map(c => {
     const n = useCases.filter(u => u.category === c).length;
-    return `<button class="filter-chip" data-cat="${c}">${c} · ${n}</button>`;
+    return `<button class="filter-chip filter-chip-cat" data-cat="${c}">${c} · ${n}</button>`;
   }).join('');
-  root.innerHTML = all + chips;
+  root.innerHTML = head + chips;
   root.querySelectorAll('.filter-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       activeFilter = btn.dataset.cat;
@@ -131,7 +141,10 @@ function renderCards() {
   const root = document.getElementById('cards');
   root.innerHTML = '';
   const filtered = useCases.filter(uc => {
-    if (activeFilter !== 'all' && uc.category !== activeFilter) return false;
+    if (activeFilter === 'big-five' && uc.phase !== 1) return false;
+    if (activeFilter === 'phase-2' && uc.phase !== 2) return false;
+    if (activeFilter !== 'all' && activeFilter !== 'big-five' && activeFilter !== 'phase-2'
+        && uc.category !== activeFilter) return false;
     if (!searchTerm) return true;
     const blob = (uc.name + ' ' + uc.category + ' ' + (uc.sections['Overview'] || '')).toLowerCase();
     return blob.includes(searchTerm);
@@ -141,15 +154,22 @@ function renderCards() {
     const overview = (uc.sections['Overview'] || '').replace(/\n/g, ' ').slice(0, 150);
     const tags = extractTags(uc);
     const card = document.createElement('div');
-    card.className = 'card';
+    card.className = 'card' + (uc.phase === 1 ? ' card-big-five' : ' card-phase-2');
     card.style.setProperty('--accent', accent);
     card.dataset.id = uc.id;
+    const phaseBadge = uc.phase === 1
+      ? `<span class="phase-badge phase-badge-1">Big Five</span>`
+      : `<span class="phase-badge phase-badge-2">Phase 2</span>`;
+    const hookLine = uc.hook
+      ? `<div class="card-hook">${uc.hook}</div>`
+      : '';
     card.innerHTML = `
       <div class="card-top">
         <div class="cat">${uc.category}</div>
-        <span class="num">${String(useCases.findIndex(u => u.id === uc.id) + 1).padStart(2, '0')} / ${String(useCases.length).padStart(2, '0')}</span>
+        ${phaseBadge}
       </div>
       <h4>${uc.name}</h4>
+      ${hookLine}
       <p>${overview}${overview.length === 150 ? '…' : ''}</p>
       <div class="card-tags">${tags.map(t => `<span class="card-tag">${t}</span>`).join('')}</div>
       <div class="card-cta">Open use case ${ICONS.card}</div>
@@ -182,19 +202,30 @@ function extractTags(uc) {
 function renderSideNav() {
   const list = document.getElementById('side-list');
   list.innerHTML = '';
-  document.getElementById('side-count').textContent = useCases.length;
-  useCases.forEach(uc => {
-    const li = document.createElement('li');
-    const btn = document.createElement('button');
-    btn.dataset.id = uc.id;
-    btn.textContent = uc.name;
-    btn.addEventListener('click', () => {
-      selectUseCase(uc.id);
-      document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const big = useCases.filter(u => u.phase === 1);
+  const p2  = useCases.filter(u => u.phase === 2);
+  document.getElementById('side-count').textContent = `${big.length} + ${p2.length}`;
+  const renderGroup = (label, group) => {
+    if (!group.length) return;
+    const head = document.createElement('li');
+    head.className = 'side-nav-group';
+    head.textContent = label;
+    list.appendChild(head);
+    group.forEach(uc => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.dataset.id = uc.id;
+      btn.textContent = uc.name;
+      btn.addEventListener('click', () => {
+        selectUseCase(uc.id);
+        document.getElementById('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
     });
-    li.appendChild(btn);
-    list.appendChild(li);
-  });
+  };
+  renderGroup('The Big Five', big);
+  renderGroup('Phase 2 · Foundation & Back-office', p2);
 }
 
 function selectUseCase(id) {
