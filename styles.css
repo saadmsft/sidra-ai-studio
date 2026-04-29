@@ -247,6 +247,39 @@ main { max-width: 1320px; margin: 0 auto; padding: 40px 28px 80px; }
 .filter-chip:hover { color: var(--text); border-color: var(--teal); }
 .filter-chip.active { background: var(--maroon); color: #fff; border-color: var(--maroon); }
 
+/* Filter toggle button */
+.filter-toggle {
+  padding: 7px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  border: 1px solid var(--line-strong); background: var(--surface);
+  color: var(--text-muted); cursor: pointer; transition: all var(--transition);
+  position: relative;
+}
+.filter-toggle:hover {
+  color: var(--text);
+  border-color: var(--teal);
+  background: var(--surface-2);
+}
+.filter-toggle::after {
+  content: '▾';
+  margin-left: 6px;
+  transition: transform var(--transition);
+  display: inline-block;
+}
+.filter-toggle[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+/* Collapsible category filter container */
+.filter-category-container {
+  display: none;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.filter-category-container.expanded {
+  display: flex;
+}
+
 /* Cards */
 .cards {
   display: grid;
